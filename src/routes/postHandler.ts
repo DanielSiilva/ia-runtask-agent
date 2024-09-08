@@ -38,7 +38,7 @@ const responseSchema = z.object({
   redirect_to_agent: z
     .object({
       should_redirect: z.boolean(),
-      reason: z.string().optional(),
+      eason: z.string().nullable().optional(),
     })
     .optional(),
 });
@@ -52,7 +52,7 @@ export async function postHandler(req: Request, res: Response) {
 
   const latestMessage = messages[messages.length - 1].content;
 
-  console.log("📝 Latest Query:", latestMessage);
+  // console.log("📝 Latest Query:", latestMessage);
   measureTime("User Input Received");
 
   const MAX_DEBUG_LENGTH = 1000;
@@ -69,7 +69,7 @@ export async function postHandler(req: Request, res: Response) {
   let ragSources: RAGSource[] = [];
 
   try {
-    console.log("🔍 Initiating RAG retrieval for query:", latestMessage);
+    // console.log("🔍 Initiating RAG retrieval for query:", latestMessage);
     measureTime("RAG Start");
     const result = await retrieveContext(latestMessage, knowledgeBaseId);
     retrievedContext = result.context;
@@ -77,7 +77,7 @@ export async function postHandler(req: Request, res: Response) {
     ragSources = result.ragSources || [];
 
     if (!result.isRagWorking) {
-      console.warn("🚨 RAG Retrieval failed but did not throw!");
+      // console.warn("🚨 RAG Retrieval failed but did not throw!");
     }
 
     measureTime("RAG Complete");
@@ -152,7 +152,7 @@ export async function postHandler(req: Request, res: Response) {
     }`;
 
   try {
-    console.log(`🚀 Query Processing`);
+    //console.log(`🚀 Query Processing`);
     measureTime("Claude Generation Start");
 
     const anthropicMessages = messages.map((msg: any) => ({
@@ -173,8 +173,10 @@ export async function postHandler(req: Request, res: Response) {
       temperature: 0.3,
     });
 
+    console.log("response message", response);
+
     measureTime("Claude Generation Complete");
-    console.log("✅ Message generation completed");
+    // console.log("✅ Message generation completed");
 
     const textContent =
       "{" +
@@ -189,11 +191,12 @@ export async function postHandler(req: Request, res: Response) {
     const responseWithId = {
       id: crypto.randomUUID(),
       ...validatedResponse,
+      usage: response.usage,
     };
 
     if (responseWithId.redirect_to_agent?.should_redirect) {
-      console.log("🚨 AGENT REDIRECT TRIGGERED!");
-      console.log("Reason:", responseWithId.redirect_to_agent.reason);
+      // console.log("🚨 AGENT REDIRECT TRIGGERED!");
+      // console.log("Reason:", responseWithId.redirect_to_agent.reason);
     }
 
     res.setHeader("Content-Type", "application/json");
