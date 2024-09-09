@@ -1,8 +1,4 @@
-const USE_CATEGORIE = true;
-let isRagWorking = false;
-let retrievedContext = "";
-let categoriesContext = "";
-
+"use strict";
 const systemPrompt = `You are a programming assistant specializing in JavaScript.
 Your primary function is to write and rewrite programming functions based on the provided examples.
 Follow the guidelines below strictly for each function:
@@ -50,12 +46,9 @@ Follow the guidelines below strictly for each function:
    - The third parameter is an object that should contain the \`data\` field, passing all the parameters the function received (i.e., \`value\`).
 
 Below is the relevant context retrieved by the RAG system, which may or may not be helpful in answering the user’s request:
-
-${
-  isRagWorking
+${isRagWorking
     ? `${retrievedContext}`
-    : "No relevant information was found for this query."
-}
+    : "No relevant information was found for this query."}
 
 Please provide answers that strictly follow the given information. If no relevant information is available, or if the context does not help to answer the query, redirect the user to a human programmer.
 
@@ -72,11 +65,9 @@ Structure your response as a valid JSON object in the following format:
     "debug": {
       "context_used": true|false
     },
-    ${
-      USE_CATEGORIE
-        ? '"matched_categories": ["category_id1", "category_id2"],'
-        : ""
-    }
+    ${USE_CATEGORIES
+    ? '"matched_categories": ["category_id1", "category_id2"],'
+    : ""}
     "redirect_to_agent": {
       "should_redirect": boolean,
       "reason": "Reason for the redirect (include only if should_redirect is true)"

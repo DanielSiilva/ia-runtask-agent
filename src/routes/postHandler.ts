@@ -5,8 +5,6 @@ import { retrieveContext } from "../utils/ragUtils";
 import { RAGSource } from "../types/index";
 import crypto from "crypto";
 import customerSupportCategories from "../data/customer_support_categories.json";
-import exempleFunc from "../data/exemple-funcao.json";
-import exempleDb from "../data/exemple-banco-de-dados.json";
 
 import {
   debugMessage,
