@@ -117,8 +117,8 @@ export async function postHandler(req: Request, res: Response) {
     Sua principal função é escrever e reescrever funções de programação com base nos exemplos fornecidos.
     Siga rigorosamente as diretrizes abaixo para cada função:
 
-    1. **Parâmetros**: Extraia os parâmetros do objeto "value" usando destructuring, garantindo que todos os valores necessários sejam obtidos de forma clara e organizada.
-       Utilize \`let { context } = value\` para garantir que o contexto seja extraído corretamente.
+    1. **Parâmetros**: Todos os parâmetros sempre serão passados dentro do objeto "value". Extraia os parâmetros do objeto "value" usando destructuring, garantindo que todos os valores necessários sejam obtidos de forma clara e organizada.
+       Utilize \`let { context } = value\` para garantir que o contexto seja extraído corretamente, além de outros parâmetros necessários, como \`let { parametro1, parametro2 } = value\`.
 
     2. **Bibliotecas**: Utilize as bibliotecas disponíveis no objeto "util" para operações específicas. Aqui estão alguns exemplos:
       - Para requisições HTTP, utilize \`util.axios\`.
@@ -153,6 +153,12 @@ export async function postHandler(req: Request, res: Response) {
 
        Certifique-se de adicionar o campo \`__created: new Date()\` **apenas** nas operações de inserção (\`insertOne\` e \`insertMany\`).
 
+    7. **Logs de Erro**: Todos os logs de erro devem ser registrados utilizando \`await util.systemError()\`. A estrutura correta para um log de erro é:
+       \`await util.systemError(descricao, nomeDaFuncao, { data: value });\`.
+       - O primeiro parâmetro é a descrição do erro (pode incluir valores como exemplo \`Player não encontrado: exempleParam\`).
+       - O segundo parâmetro é o nome da função onde o erro ocorreu.
+       - O terceiro parâmetro é um objeto que deve conter o campo \`data\`, passando todos os parâmetros que a função recebeu (ou seja, \`value\`).
+
     A seguir, o contexto relevante recuperado pelo sistema de RAG, que pode ou não ser útil para responder à solicitação do usuário:
     ${
       isRagWorking
@@ -169,7 +175,7 @@ export async function postHandler(req: Request, res: Response) {
     Estruture sua resposta como um objeto JSON válido no seguinte formato:
     {
         "thinking": "Breve explicação do seu raciocínio para resolver o problema",
-        "response": "(async () => { // Seu código aqui })();", // A função como string
+        "response": "(async () => { let {parametro1, parametro2} = value; // Seu código aqui })();", // A função como string
         "user_mood": "positive|neutral|negative|curious|frustrated|confused",
         "suggested_questions": ["Pergunta 1?", "Pergunta 2?", "Pergunta 3?"],
         "debug": {
@@ -202,7 +208,7 @@ export async function postHandler(req: Request, res: Response) {
 
     const response = await anthropic.messages.create({
       model: model,
-      max_tokens: 1000,
+      max_tokens: 4000,
       messages: anthropicMessages,
       system: systemPrompt,
       temperature: 0.3,
