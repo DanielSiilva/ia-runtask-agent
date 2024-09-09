@@ -1,0 +1,3 @@
+{
+    "addData": "await util.createData('contacts', { phone: _phone })"
+}
