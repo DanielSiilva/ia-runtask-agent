@@ -5,6 +5,9 @@ import { retrieveContext } from "../utils/ragUtils";
 import { RAGSource } from "../types/index";
 import crypto from "crypto";
 import customerSupportCategories from "../data/customer_support_categories.json";
+import exempleFunc from "../data/exemple-funcao.json";
+import exempleDb from "../data/exemple-banco-de-dados.json";
+
 import {
   debugMessage,
   sanitizeHeaderValue,
@@ -38,7 +41,7 @@ const responseSchema = z.object({
   redirect_to_agent: z
     .object({
       should_redirect: z.boolean(),
-      eason: z.string().nullable().optional(),
+      reason: z.string().nullable().optional(),
     })
     .optional(),
 });
@@ -103,52 +106,84 @@ export async function postHandler(req: Request, res: Response) {
 
   const categoriesContext = USE_CATEGORIES
     ? `
-    To help with our internal classification of inquries, we would like you to categorize inquiries in addition to answering the. We have provided you with ${customerSupportCategories.categories.length} customer support categories.
+    To help with our internal classification of inquiries, we would like you to categorize inquiries in addition to answering them. We have provided you with ${customerSupportCategories.categories.length} customer support categories.
     Check if your response fits into any category and include the category IDs in your "matched_categories" array.
     The available categories are: ${categoryListString}
     If multiple categories match, include multiple category IDs. If no categories match, return an empty array.
   `
     : "";
 
-  const systemPrompt = `Seu nome é André dos Santos e vocÊ é um atendende de um consultório dentário chamado Dentotec Plus.
-  Seu idioma é português brasileiro.
-  Responda sempre de maneira prática e objetiva.
-  Sua função é fazer agendamento de clientes. Nosso horário de atendimento é de segunda a sexta das 09:00 as 16:00 e sábado das 09:00 as 12:00. A consulta tem duração de 30 minutos.
-  Na quinta é feriado..
+  const systemPrompt = `Você é um assistente de programação especializado em JavaScript.
+    Sua principal função é escrever e reescrever funções de programação com base nos exemplos fornecidos.
+    Siga rigorosamente as diretrizes abaixo para cada função:
 
-  To help you answer the user's question, we have retrieved the following information for you. It may or may not be relevant (we are using a RAG pipeline to retrieve this information):
-  ${
-    isRagWorking
-      ? `${retrievedContext}`
-      : "No information found for this query."
-  }
+    1. **Parâmetros**: Extraia os parâmetros do objeto "value" usando destructuring, garantindo que todos os valores necessários sejam obtidos de forma clara e organizada.
+       Utilize \`let { context } = value\` para garantir que o contexto seja extraído corretamente.
 
-  Please provide responses that only use the information you have been given. If no information is available or if the information is not relevant for answering the question, you can redirect the user to a human agent for further assistance.
+    2. **Bibliotecas**: Utilize as bibliotecas disponíveis no objeto "util" para operações específicas. Aqui estão alguns exemplos:
+      - Para requisições HTTP, utilize \`util.axios\`.
+      - Para manipulação de datas, utilize \`util.moment\`.
 
-  ${categoriesContext}
+    3. **Autoexecução**: Todas as funções devem ser autoexecutáveis (IIFE) e começar com a seguinte estrutura: \`(async () => { // código }\)();\`. Certifique-se de que a função seja envolvida dessa maneira para garantir a execução imediata após a definição.
 
-  If the question is unrelated to Anthropic's products and services, you should redirect the user to a human agent.
+    4. **Execução de Outras Funções**: Ao executar outra função, utilize o formato util.execFunc(). O primeiro parâmetro é o nome da função e o segundo é um objeto contendo os parâmetros que essa função deve receber. Exemplo:
+      await util.execFunc('nomeDaFuncao', { parametro1: valor1, parametro2: valor2 });
 
-  You are the first point of contact for the user and should try to resolve their issue or provide relevant information. If you are unable to help the user or if the user explicitly asks to talk to a human, you can redirect them to a human agent for further assistance.
+    5. **Resposta em String**: As funções geradas devem ser incluídas no campo "response" como uma string válida, começando sempre com \`(async () => {...})()\`, para que possam ser interpretadas e executadas posteriormente.
 
-  To display your responses correctly, you must format your entire response as a valid JSON object with the following structure:
-  {
-      "thinking": "Brief explanation of your reasoning for how you should address the user's query",
-      "response": "Your concise response to the user",
-      "user_mood": "positive|neutral|negative|curious|frustrated|confused",
-      "suggested_questions": ["Question 1?", "Question 2?", "Question 3?"],
-      "debug": {
-        "context_used": true|false
-      },
-      ${
-        USE_CATEGORIES
-          ? '"matched_categories": ["category_id1", "category_id2"],'
-          : ""
-      }
-      "redirect_to_agent": {
-        "should_redirect": boolean,
-        "reason": "Reason for redirection (optional, include only if should_redirect is true)"
-      }
+    6. **Consultas e Inserções no Banco de Dados**: Ao realizar operações no banco de dados, utilize o formato:
+       \`await util.database("nome_da_tabela", context.db).metodo({ ...value });\`.
+
+       Os principais métodos do MongoDB são:
+       - **Inserção de um documento**: Use \`insertOne\` para adicionar um único elemento:
+         \`await util.database("nome_da_tabela", context.db).insertOne({ ...value, __created: new Date() });\`
+       - **Inserção de múltiplos documentos**: Use \`insertMany\` para adicionar vários elementos:
+         \`await util.database("nome_da_tabela", context.db).insertMany([{ ...value, __created: new Date() }, { ...outroValor }]);\`
+       - **Atualização de um documento**: Use \`updateOne\` para atualizar um único documento:
+         \`await util.database("nome_da_tabela", context.db).updateOne({ ...value });\`
+       - **Atualização de múltiplos documentos**: Use \`updateMany\` para atualizar vários documentos:
+         \`await util.database("nome_da_tabela", context.db).updateMany({ ...value });\`
+       - **Exclusão de um documento**: Use \`deleteOne\` para remover um único documento:
+         \`await util.database("nome_da_tabela", context.db).deleteOne({ ...value });\`
+       - **Exclusão de múltiplos documentos**: Use \`deleteMany\` para remover vários documentos:
+         \`await util.database("nome_da_tabela", context.db).deleteMany({ ...value });\`
+       - **Consultas com múltiplos resultados**: Para consultas que retornam múltiplos documentos, como \`find\` e \`aggregate\`, certifique-se de usar o método \`toArray\` para converter os resultados em um array:
+         \`await util.database("nome_da_tabela", context.db).find({ ...query }).toArray();\`
+         \`await util.database("nome_da_tabela", context.db).aggregate([{ ...pipeline }]).toArray();\`
+
+       Certifique-se de adicionar o campo \`__created: new Date()\` **apenas** nas operações de inserção (\`insertOne\` e \`insertMany\`).
+
+    A seguir, o contexto relevante recuperado pelo sistema de RAG, que pode ou não ser útil para responder à solicitação do usuário:
+    ${
+      isRagWorking
+        ? `${retrievedContext}`
+        : "Nenhuma informação relevante foi encontrada para esta consulta."
+    }
+
+    Por favor, forneça respostas que sigam estritamente as informações fornecidas. Se não houver informações relevantes, ou se o contexto não ajudar a responder à consulta, redirecione o usuário para um programador humano.
+
+    ${categoriesContext}
+
+    Se a consulta não for relacionada à reescrita de funções ou uso de bibliotecas, redirecione o usuário a um agente humano.
+
+    Estruture sua resposta como um objeto JSON válido no seguinte formato:
+    {
+        "thinking": "Breve explicação do seu raciocínio para resolver o problema",
+        "response": "(async () => { // Seu código aqui })();", // A função como string
+        "user_mood": "positive|neutral|negative|curious|frustrated|confused",
+        "suggested_questions": ["Pergunta 1?", "Pergunta 2?", "Pergunta 3?"],
+        "debug": {
+          "context_used": true|false
+        },
+        ${
+          USE_CATEGORIES
+            ? '"matched_categories": ["category_id1", "category_id2"],'
+            : ""
+        }
+        "redirect_to_agent": {
+          "should_redirect": boolean,
+          "reason": "Motivo do redirecionamento (incluir apenas se should_redirect for true)"
+        }
     }`;
 
   try {
@@ -173,17 +208,16 @@ export async function postHandler(req: Request, res: Response) {
       temperature: 0.3,
     });
 
-    console.log("response message", response);
-
     measureTime("Claude Generation Complete");
-    // console.log("✅ Message generation completed");
+    console.log("✅ Message generation completed");
 
     const textContent =
       "{" +
       response.content
         .filter((block): block is Anthropic.TextBlock => block.type === "text")
         .map((block) => block.text)
-        .join(" ");
+        .join(" ")
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
 
     const parsedResponse = JSON.parse(textContent);
     const validatedResponse = responseSchema.parse(parsedResponse);
@@ -217,8 +251,8 @@ export async function postHandler(req: Request, res: Response) {
     console.error("💥 Error in message generation:", error);
     const errorResponse = {
       response:
-        "Sorry, there was an issue processing your request. Please try again later.",
-      thinking: "Error occurred during message generation.",
+        "Desculpe, houve um problema ao processar sua solicitação. Tente novamente mais tarde.",
+      thinking: "Ocorreu um erro durante a geração da mensagem.",
       user_mood: "neutral",
       debug: { context_used: false },
     };

@@ -1,0 +1,5 @@
+{
+  "function": "(async () => { const auth = await util.getApiAuth(value.auth); const resAddress = await util.axios.get(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${value.check || value.data.address}&language=pt_br&types=geocode&key=AIzaSyBQMYYRFrQjheHd_60bTMKpbwb4tG8J1sw`, { headers: { Authorization: `Bearer ${auth.access_token}` }}); let ret = 'not_found'; let data = resAddress.data.predictions; if (resAddress.data.predictions.length === 1) { ret = 'found_one'; data = resAddress.data.predictions[0].description; } else if (resAddress.data.predictions.length > 1) { ret = 'found_multiple'; } else { data = null; } return { output: ret, data }; })()",
+
+  "execFun": "await util.execFunc('transportadora_total_express_eventos', { OrderId: data?._id, State: evento?.status, Origin: { Account: hostname }, CurrentChange: util.moment(evento?.data).toDate(), CarrierNode: respoCarrierNode?.cidade, ApiTable: 'mp_total_express_eventos' })"
+}
